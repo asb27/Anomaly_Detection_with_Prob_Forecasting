@@ -27,7 +27,7 @@ class AnomalyTv(AnomalyBase):
             (93.75, 100, 2.0),
         ]
 
-        # Tüketim değerlerini güncelleme
+        # Update Consumption values for the anomaly period
         for start_percent, end_percent, mult in decrease_percentages:
             period_start = start_time + pd.Timedelta(hours=total_period * start_percent / 100)
             period_end = start_time + pd.Timedelta(hours=total_period * end_percent / 100)

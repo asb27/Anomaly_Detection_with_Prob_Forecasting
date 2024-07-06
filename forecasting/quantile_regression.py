@@ -46,18 +46,18 @@ class QuantileRegression:
 
     def run(self, year_train, start_train, end_train, year_test, start_test, end_test):
         try:
-            # Veri yükleme ve hazırlama
+            # Data loading and preparation
             X_train, y_train, X_test, y_test = self.load_and_prepare_data(year_train, start_train, end_train, year_test,
                                                                           start_test, end_test)
 
-            # Model eğitimi
+            # Model fitting
             self.fit(X_train, y_train)
 
-            # Tahmin yapma
+            # Predictions
             predictions = self.predict(X_test)
             print('Predictions:', predictions)
 
-            # Tahminleri DataFrame'e dönüştürme
+            # DF creation
             prediction_df = self.create_prediction_dataframe(predictions, y_test)
 
             return prediction_df

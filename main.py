@@ -1,12 +1,9 @@
 import os
 import sys
-import pandas as pd
-import numpy as np
-
 
 from config_loader import ConfigLoader
 from data_preparation.data_processor import DataProcessor
-from forecasting.model_factory import ModelFactory
+from factory.model_factory import ModelFactory
 
 
 from factory.anomaly_factory import AnomalyFactory
