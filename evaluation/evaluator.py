@@ -8,9 +8,9 @@ class Evaluator:
         self.df = df
         self.true_anomalies_column = true_anomalies_column
 
-    def evaluate(self, detection_column):
-        y_true = self.df[self.true_anomalies_column]
-        y_pred = self.df[detection_column]
+    def evaluate(self,df, detection_column):
+        y_true = df[self.true_anomalies_column]
+        y_pred = df[detection_column]
 
         precision = precision_score(y_true, y_pred)
         recall = recall_score(y_true, y_pred)
@@ -32,21 +32,13 @@ class Evaluator:
         plt.plot(self.df.index, self.df['Anomaly_Consumption'], 'r-', label='Anomaly Consumption')
 
         # Quantile bands plot
-        upper_quantiles = [col for col in self.df.columns if col.startswith('Prediction_') and col.endswith('_0.99')]
-        lower_quantiles = [col for col in self.df.columns if col.startswith('Prediction_') and col.endswith('_0.01')]
-
-        for upper, lower in zip(upper_quantiles, lower_quantiles):
-            plt.fill_between(self.df.index, self.df[lower], self.df[upper], color='gray', alpha=0.3)
+        quantile_columns = [col for col in self.df.columns if col.startswith('Prediction_')]
+        for col in quantile_columns:
+            plt.plot(self.df.index, self.df[col], 'k-', alpha=0.3)
 
         # Anomaly detections plot
         for index, row in self.df.iterrows():
             if row[self.true_anomalies_column] == 1:
-                colors = {
-                    'all': 'green',
-                    'false': 'red',
-                    'method_1': 'purple',
-                    'method_2': 'yellow'
-                }
                 detection = row[detection_columns].sum()
                 if detection == len(detection_columns):
                     plt.plot(index, row['Anomaly_Consumption'], 'go')  # green if all methods detected
@@ -63,15 +55,22 @@ class Evaluator:
         plt.title('Anomaly Detection Results')
         plt.show()
 
-    def evaluate_all_methods(self):
+    def evaluate_per_scenario(self):
+        scenarios = self.df['Scenario'].unique()
         evaluation_results = {}
-        detection_columns = [col for col in self.df.columns if col.startswith('Detect_')]
 
-        for column in detection_columns:
-            evaluation_results[column] = self.evaluate(column)
+        for scenario in scenarios:
+            scenario_df = self.df[self.df['Scenario'] == scenario]
+            detection_columns = [col for col in self.df.columns if col.startswith('Detect_')]
 
-        for method, result in evaluation_results.items():
-            print(f"Results for {method}:")
-            print(result)
+            scenario_results = {}
+            for column in detection_columns:
+                scenario_results[column] = self.evaluate(scenario_df, column)
 
-        self.visualize(detection_columns)
+            evaluation_results[scenario] = scenario_results
+
+        for scenario, results in evaluation_results.items():
+            print(f"Results for {scenario}:")
+            for method, result in results.items():
+                print(f"  {method}: {result}")
+

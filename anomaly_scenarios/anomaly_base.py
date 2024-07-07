@@ -11,6 +11,8 @@ class AnomalyBase:
         df_original = df.copy()
         df['Anomaly_Consumption'] = df['Consumption'].copy()
         df['Anomaly'] = 0
+        df['Scenario'] = 'Normal'  # Default olarak tüm verileri 'Normal' olarak etiketle
+
         all_anomaly_periods = []
 
         for anomaly_type in self.anomaly_types:
@@ -23,6 +25,8 @@ class AnomalyBase:
                 df_period = df.loc[mask].copy()
 
                 df_updated_period = anomaly_instance.apply_anomaly(df_period, period)
+                df_updated_period['Scenario'] = anomaly_type
+
                 df.update(df_updated_period)
 
         filtered_df = self._filter_anomaly_periods(df, all_anomaly_periods)

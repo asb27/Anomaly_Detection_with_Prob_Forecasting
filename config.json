@@ -16,19 +16,22 @@
     },
 
   "anomalies": {
-    "types": ["anomaly_tv", "anomaly_evacuation"],
+    "types": ["normal_consumption","anomaly_tv", "anomaly_evacuation"],
     "periods": {
-      "anomaly_tv": [
-        ["2020-02-05 10:20", "2020-02-05 14:20"]
+      "normal_consumption":[
+            ["2020-01-01 00:00", "2020-12-31 23:59"]
       ],
-        "anomaly_evacuation": [
-            ["2020-03-05 10:20", "2020-03-05 16:20"]
+      "anomaly_tv": [
+        ["2020-02-05 19:20", "2020-02-05 22:20"]
+      ],
+      "anomaly_evacuation": [
+            ["2020-03-05 10:30", "2020-03-05 16:30"]
         ]
     },
     "classes": {
+      "normal_consumption": "NormalConsumption",
       "anomaly_tv": "AnomalyTv",
-      "anomaly_evacuation": "AnomalyEvacuation",
-      "anomaly_peak": "AnomalyPeak"
+      "anomaly_evacuation": "AnomalyEvacuation"
     }
   },
 
@@ -36,7 +39,8 @@
     "methods": ["detection_with_quantile", "detection_with_threshold"],
     "parameters": {
       "detection_with_quantile": [
-        {"upper_quantile": "0.99","lower_quantile": "0.01"}
+        {"upper_quantile": "0.999","lower_quantile": "0.001"},
+        {"upper_quantile": "0.99", "lower_quantile": "0.01"}
       ],
         "detection_with_threshold": [
             {"upper_quantile": "0.99","lower_quantile": "0.01", "threshold": 0.1}
