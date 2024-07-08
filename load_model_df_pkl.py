@@ -47,4 +47,4 @@ detection_base = DetectionBase(config_loader)
 detected_anomalies_df, detection_results = detection_base.apply_detection_methods(all_anomalies_df)
 
 evaluator = Evaluator(detected_anomalies_df)
-evaluator.evaluate_all_methods()
+evaluator.evaluate_per_scenario()
