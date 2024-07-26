@@ -3,7 +3,7 @@ import sys
 import pandas as pd
 import pickle
 
-from config_loader import ConfigLoader
+from initial_loader import ConfigLoader
 from anomaly_scenarios.anomaly_base import AnomalyBase
 from factory.anomaly_factory import AnomalyFactory
 from detection_methods.detection_base import DetectionBase
@@ -30,7 +30,7 @@ with open(os.path.join(current_dir, 'prepared_data.pkl'), 'rb') as f:
     prediction_df = pickle.load(f)
 
 # Config dosyasını yükleme
-config_path = os.path.join(current_dir, 'config.json')
+config_path = os.path.join(current_dir, 'initial.json')
 config_loader = ConfigLoader(config_path)
 
 # Anomali sınıflarını ve senaryolarını yükleyip uygula

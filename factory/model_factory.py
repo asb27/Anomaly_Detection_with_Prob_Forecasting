@@ -1,16 +1,21 @@
-from anomaly_scenarios.normal_consumption import NormalConsumption
-from anomaly_scenarios.anomaly_tv import AnomalyTv
-from anomaly_scenarios.anomaly_evacuation import AnomalyEvacuation
+from data_preparation import data_processor
+from forecasting.quantile_regression import QuantileRegression
+from forecasting.xgboost import Xgboost
+class ModelFactory:
 
-class AnomalyFactory:
+
     def __init__(self, config_loader):
         self.config_loader = config_loader
-        self.classes_config = {
-            "anomaly_tv": AnomalyTv,
-            "anomaly_evacuation": AnomalyEvacuation,
-            "normal_consumption" : NormalConsumption,
 
-        }
+    @staticmethod
+    def get_forecasting_method(forecasting_type, config_loader):
+        model_type = forecasting_type
+        if model_type == "quantile_regression":
+            return QuantileRegression(config_loader)
+        elif model_type == "xgboost":
+            return Xgboost(config_loader)
 
-    def get_anomaly_classes(self):
-        return self.classes_config
+        #elif model_type == "xgboost":
+        #    return xgboost(config_loader)
+        else:
+            raise ValueError(f"Model type '{model_type}' is not supported.")

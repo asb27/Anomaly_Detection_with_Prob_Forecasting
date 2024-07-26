@@ -8,6 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+data/
 build/
 develop-eggs/
 dist/
@@ -119,6 +120,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# data
+.hdf5
 
 # Spyder project settings
 .spyderproject

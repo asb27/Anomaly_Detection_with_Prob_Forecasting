@@ -2,14 +2,15 @@ import os
 import holidays
 import numpy as np
 import pandas as pd
-from config_loader import ConfigLoader
+from initial_loader import ConfigLoader
 from data_preparation.data_load import DataLoad
 
 class DataProcessor:
     def __init__(self, config_loader):
+        self.config_loader = config_loader
         self.data_directory = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "data"))
         self.data_loader = DataLoad(self.data_directory)
-        self.config = config_loader.get_config('data_processor')
+        self.config_variables = config_loader.get_config('data_processor')['models']
 
     def add_time_features(self, df):
         df['day_of_week'] = df.index.dayofweek
@@ -50,26 +51,26 @@ class DataProcessor:
             df_interpolated.loc[mask, column] = df_interpolated.loc[mask, column].interpolate(method=method)
         return df_interpolated
 
-    def add_moving_averages(self, df):
-        moving_averages = self.config.get('moving_averages', {})
+    def add_moving_averages(self, model_name, df):
+        moving_averages = self.config_variables[model_name].get('moving_averages', {})
         for column, windows in moving_averages.items():
             for window in windows:
                 df[f'{column}_MA_{window}'] = df[column].shift(1).rolling(window=window).mean()
                 #or we can use this code
-                '''df['MA_shifted_no_shift'] = df['Değer'].rolling(window=4).apply(
+                '''df['MA_shifted_no_shift'] = df['value'].rolling(window=4).apply(
                     lambda x: x[:-1].mean() if len(x) == 4 else pd.NA, raw=False)'''
 
         return df
 
-    def add_lags(self, df):
-        lags = self.config.get('lags', {})
+    def add_lags(self, model_name, df):
+        lags = self.config_variables[model_name].get('lags', {})
         for column, lag_periods in lags.items():
             for lag in lag_periods:
                 df[f'{column}_lag_{lag}'] = df[column].shift(lag)
         return df
 
-    def create_dataframe_common(self, year, datestart, dateend, sampling):
-        print('dcreating dataframe')
+    def create_dataframe_common(self, year, datestart, dateend,model_name, sampling):
+        print('creating dataframe')
         weather_dic = self.data_loader.readweatherall(year, datestart, dateend, sampling)
         weather_df = pd.concat(weather_dic.values(), axis=1)
         data, psum = self.data_loader.read_data('1min', year, datestart, dateend, sampling, with_hp=False)
@@ -77,20 +78,39 @@ class DataProcessor:
         merge_tot = pd.concat([df, weather_df], axis=1)
         merge_tot = self.add_time_features(merge_tot)
         merge_tot = self.add_holiday_feature(merge_tot, year)
-        merge_tot = self.add_moving_averages(merge_tot)
-        merge_tot = self.add_lags(merge_tot)
-        merge_tot.drop(['hour_of_day', 'month', 'day_of_week', 'DayOfYear'], axis=1, inplace=True)
+        merge_tot = self.add_moving_averages(model_name,merge_tot)
+        merge_tot = self.add_lags(model_name,merge_tot)
+        #merge_tot.drop(['hour_of_day', 'month', 'day_of_week', 'DayOfYear'], axis=1, inplace=True)
 
         # Config
-        selected_variables = self.config['variables']
+        selected_variables = self.config_variables[model_name]['variables']
         merge_tot = merge_tot[selected_variables]
         merge_tot = merge_tot.dropna()
 
         return merge_tot
-    def create_dataframe(self, year, datestart, dateend, sampling='15Min'):
-        return self.create_dataframe_common(year, datestart, dateend, sampling)
+    def create_dataframe(self, year, datestart, dateend, model_name,sampling='15Min',):
+        return self.create_dataframe_common(year, datestart, dateend,model_name, sampling)
 
-    def create_dataframe_1min(self, year, datestart, dateend, sampling='1min'):
-        df = self.create_dataframe_common(year, datestart, dateend, sampling)
+    def create_dataframe_1min(self, year, datestart, dateend, model_name ,sampling='1min'):
+        df = self.create_dataframe_common(year, datestart, dateend, model_name,sampling)
         df = self.interpolate_df_with_limit(df, method='linear', limit=66)
         return df
+
+
+    def load_and_prepare_data(self, year_train, start_train, end_train, year_test, start_test, end_test, model_name):
+        print('load dataframe')
+
+        df_train = self.create_dataframe(year_train, start_train, end_train, model_name,'15min')
+        df_test = self.create_dataframe(year_test, start_test, end_test,model_name, '15min')
+
+        print(f"train: {model_name} ::")
+        print(df_train.head())
+        print(f"test: {model_name} ::")
+        print(df_test.head())
+
+        X_train = df_train.drop('Consumption', axis=1)
+        y_train = df_train['Consumption']
+        X_test = df_test.drop('Consumption', axis=1)
+        y_test = df_test['Consumption']
+
+        return X_train, y_train, X_test, y_test

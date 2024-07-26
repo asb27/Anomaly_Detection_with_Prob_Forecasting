@@ -101,7 +101,7 @@ class DataLoad:
             weather.append(all)
         weather_dict = {
             'temperature': weather[0],
-            'solar irradiance': weather[1],
+            'solar_irradiance': weather[1],
             'wind': weather[2],
             'humidity': weather[3],
             'pressure': weather[4],

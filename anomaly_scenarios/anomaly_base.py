@@ -8,6 +8,9 @@ class AnomalyBase:
         self.anomaly_periods = self.anomaly_config['periods']
 
     def apply_anomalies(self, df, anomaly_classes):
+        if df is None:
+            raise ValueError("DataFrame is None. Please provide a valid DataFrame.")
+
         df_original = df.copy()
         df['Anomaly_Consumption'] = df['Consumption'].copy()
         df['Anomaly'] = 0

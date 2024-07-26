@@ -10,16 +10,15 @@ class DetectionBase:
 
     def apply_detection_methods(self, df):
         results = {}
-        df = df.copy()  # Orijinal DataFrame'in bir kopyasını oluşturun
+        df = df.copy()
         for method_name in self.detection_methods:
             method_params_list = self.config_loader.get_detection_parameters(method_name)
             methods = method_name
             for params in method_params_list:
                 detection_method = self.detection_factory.get_detection_method(method_name, params)
                 detection_result = detection_method.detect(
-                    df.copy())  # Her tespit metodunun sonuçlarını ayrı bir DataFrame'de sakla
+                    df.copy())
 
-                # Parametreleri string olarak kullanarak sütun ismi oluştur
                 param_str = '_'.join([f'{key}_{value}' for key, value in params.items()])
                 column_name = f'Detect_{method_name}_{param_str}'
 

@@ -1,7 +1,7 @@
 import os
 import sys
 
-from config_loader import ConfigLoader
+from initial_loader import ConfigLoader
 from data_preparation.data_processor import DataProcessor
 from factory.model_factory import ModelFactory
 
@@ -15,7 +15,7 @@ current_dir = os.getcwd()
 sys.path.append(os.path.join(current_dir, 'data_preparation'))
 
 # Config dosya yolunu ayarlayın
-config_path = os.path.join(current_dir, 'config.json')
+config_path = os.path.join(current_dir, 'initial.json')
 config_loader = ConfigLoader(config_path)
 
 # DataProcessor sınıfını kullanarak veriyi yükleyin ve hazırlayın
@@ -31,7 +31,7 @@ end_test = '2020-12-31 23:59'
 
 model = ModelFactory.get_forecasting_method(config_loader)
 prediction_df  = model.run(year_train, start_train, end_train, year_test, start_test, end_test)
-
+print(prediction_df.head())
 # Anomali sınıflarını ve senaryolarını yükleyip uygula
 anomaly_factory = AnomalyFactory(config_loader)
 anomaly_classes = anomaly_factory.get_anomaly_classes()
