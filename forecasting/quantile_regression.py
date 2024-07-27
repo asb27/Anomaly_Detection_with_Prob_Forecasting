@@ -3,10 +3,14 @@ import pandas as pd
 from sklearn.linear_model import QuantileRegressor
 class QuantileRegression:
     def __init__(self, model_config):
-        self.parameters = model_config
-        self.quantiles = self.parameters.get('quantiles', [0.1, 0.5, 0.9])
-        self.alpha = self.parameters.get('alpha', 0.0)
-        self.models = {q: QuantileRegressor(quantile=q, alpha=self.alpha) for q in self.quantiles}
+        self.params = model_config
+        print("params", self.params)
+        self.quantiles = self.params.get('params', {}).get('quantiles', [0.1, 0.5, 0.9])
+        print("quantiles", self.quantiles)
+        self.alpha = self.params.get('params', {}).get('alpha', 0.0)
+        print("alpha", self.alpha)
+
+        #self.models = {q: QuantileRegressor(quantile=q, alpha=self.alpha) for q in self.quantiles}
 
     def fit(self,X_train, y_train):
         self.models = {

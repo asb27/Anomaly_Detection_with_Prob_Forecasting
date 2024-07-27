@@ -38,6 +38,9 @@ class ConfigLoader:
     def get_alpha(self, model_type):
         return self.config['forecasting']['algorithms'][model_type].get('alpha', 0.0)
 
+    def get_xgboost_params(self):
+        return self.config['forecasting']['algorithms']['xgboost'].get('params', {})
+
     # Get the types of anomalies
     def get_anomaly_types(self):
         return self.config['anomalies'].get('types', [])

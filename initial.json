@@ -38,21 +38,30 @@
   },
 
    "forecasting": {
-     "type": [
-       "quantile_regression"
-     ],
-     "algorithms": {
-       "quantile_regression": {
-         "parameters": {
-           "quantiles": [
-             0.1,
-             0.5,
-             0.9
-           ],
-           "alpha": 0.0
-         }
+     "type": ["quantile_regression","xgboost"],
+       "algorithms": {
+         "quantile_regression": {
+           "params": {
+             "quantiles": [
+               0.1
+             ],
+             "alpha": 0.0
+           }
+         },
+         "xgboost": {
+          "params": {
+            "quantile_alpha": [0.1, 0.5, 0.9],
+            "n_estimators": 100,
+            "learning_rate": 0.1,
+            "max_depth": 5,
+            "min_child_weight": 1,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "reg_alpha": 0.0,
+            "reg_lambda": 1.0
+          }
+        }
        }
-     }
    },
 
   "anomalies": {
