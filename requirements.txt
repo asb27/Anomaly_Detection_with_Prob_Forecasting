@@ -1,6 +1,10 @@
 holidays==0.45
 matplotlib==3.8.4
-numpy==2.0.1
-pandas==2.2.2
+numpy~=1.26.4
+pandas~=2.2.1
 scikit_learn==1.4.1.post1
 matplotlib==3.8.3
+
+tables~=3.9.2
+scikit-learn~=1.4.1.post1
+xgboost~=2.1.0

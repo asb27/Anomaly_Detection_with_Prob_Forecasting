@@ -1,0 +1,108 @@
+{
+  "training_dates": {
+    "year_train": 2019,
+    "start_train": "2019-01-01 00:00",
+    "end_train": "2019-12-31 23:59"
+  },
+  "testing_dates": {
+    "year_test": 2020,
+    "start_test": "2020-01-01 00:00",
+    "end_test": "2020-12-31 23:59"
+  },
+
+  "data_processor": {
+    "model_names": ["ex_factors", "ex_factors_with_MA"],
+    "models":{
+    "ex_factors": {
+      "variables": ["Consumption","temperature", "humidity", "day_of_week_sin", "day_of_week_cos", "is_weekend","temperature_MA_6","temperature_MA_24"],
+        "moving_averages": {
+          "temperature": [6, 24]
+        },
+    "lags": {
+      "temperature": [3]
+      }
+    },
+
+    "ex_factors_with_MA": {
+      "variables": [
+        "Consumption",
+        "temperature",
+        "humidity",
+        "day_of_week_sin",
+        "day_of_week_cos",
+        "is_weekend",
+        "Consumption_MA_6",
+        "Consumption_MA_24",
+        "Consumption_lag_1"
+      ],
+      "moving_averages": {
+        "Consumption": [
+          6,
+          24
+        ]
+      },
+      "lags": {
+        "Consumption": [1]
+      }
+    }
+    }
+  },
+
+   "forecasting": {
+     "type": ["quantile_regression","xgboost"],
+       "algorithms": {
+         "quantile_regression": {
+           "params": {
+             "quantiles": [0.1, 0.5, 0.9],
+             "alpha": 0.0
+           }
+         },
+         "xgboost": {
+          "params": {
+            "quantile_alpha": [0.1, 0.5, 0.9],
+            "n_estimators": 100,
+            "learning_rate": 0.1,
+            "max_depth": 10,
+            "min_child_weight": 1,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "reg_alpha": 0.0,
+            "reg_lambda": 1.0
+          }
+        }
+       }
+   },
+
+  "anomalies": {
+    "types": ["normal_consumption","anomaly_tv", "anomaly_evacuation"],
+    "periods": {
+      "normal_consumption":[
+            ["2020-01-01 00:00", "2020-12-31 23:59"]
+      ],
+      "anomaly_tv": [
+        ["2020-02-05 19:20", "2020-02-05 22:20"]
+      ],
+      "anomaly_evacuation": [
+            ["2020-03-05 10:30", "2020-03-05 16:30"]
+        ]
+    },
+    "classes": {
+      "normal_consumption": "NormalConsumption",
+      "anomaly_tv": "AnomalyTv",
+      "anomaly_evacuation": "AnomalyEvacuation"
+    }
+  },
+
+  "detection_methods": {
+    "methods": ["det_with_quantile", "det_with_threshold"],
+    "parameters": {
+      "det_with_quantile": [
+        {"upper_quantile": "0.9","lower_quantile": "0.1"},
+        {"upper_quantile": "0.5", "lower_quantile": "0.1"}
+      ],
+        "det_with_threshold": [
+            {"upper_quantile": "0.9","lower_quantile": "0.1", "threshold": 0.1}
+        ]
+    }
+  }
+}

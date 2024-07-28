@@ -1,54 +1,59 @@
 import os
 import sys
-from initial_loader import ConfigLoader
-from data_preparation.data_processor import DataProcessor
-from factory.model_factory import ModelFactory
-from forecasting.forecasting_base import ForecastingBase
-from factory.anomaly_factory import AnomalyFactory
-from anomaly_scenarios.anomaly_base import AnomalyBase
-from detection_methods.detection_base import DetectionBase
-from evaluation.evaluator import Evaluator
+import pandas as pd
+import tables
+import warnings
+
+from config.initial_loader import ConfigLoader
+from src.data_preparation.data_processor import DataProcessor
+from src.forecasting.forecasting_base import ForecastingBase
+from src.factory.anomaly_factory import AnomalyFactory
+from src.anomaly_scenarios.anomaly_base import AnomalyBase
+from src.detection_methods.detection_base import DetectionBase
+from src.evaluation.evaluator_base import EvaluatorBase
+
+warnings.filterwarnings('ignore', category=tables.NaturalNameWarning)
 
 current_dir = os.getcwd()
 sys.path.append(os.path.join(current_dir, 'data_preparation'))
 
-# Config dosya yolunu ayarlayın
-config_path = os.path.join(current_dir, 'initial.json')
+config_path = os.path.join(current_dir, 'config\\initial.json')
 config_loader = ConfigLoader(config_path)
 
-# DataProcessor sınıfını kullanarak veriyi yükleyin ve hazırlayın
 data_processor = DataProcessor(config_loader)
-
-year_train = 2019
-start_train = '2019-01-01 00:00'
-end_train = '2019-12-31 23:59'
-
-year_test = 2020
-start_test = '2020-01-01 00:00'
-end_test = '2020-12-31 23:59'
-
-# ForecastingBase sınıfını oluşturun
 forecasting_base = ForecastingBase(config_loader)
 
-# Tüm modelleri çalıştırarak tahminleri alın
-all_predictions = forecasting_base.run_all_models(year_train, start_train, end_train, year_test, start_test, end_test)
+all_predictions = forecasting_base.run_all_models()
 
-for model_type, df in all_predictions.items():
-    globals()[f'df_{model_type}'] = df
+#for model_type, df in all_predictions.items():
+#   globals()[f'df_{model_type}'] = df
 
 
-# Anomali sınıflarını ve senaryolarını yükleyip uygula
 anomaly_factory = AnomalyFactory(config_loader)
 anomaly_classes = anomaly_factory.get_anomaly_classes()
-
 anomaly_base = AnomalyBase(config_loader)
-#all_anomalies_df, prediction_original = anomaly_base.apply_anomalies(prediction_df, anomaly_classes)
+
+results = anomaly_base.apply_anomalies(all_predictions, anomaly_classes)
+
+'''
+for key, (filtered_df, df_original) in results.items():
+    print(f"Results for {key}:")
+    print("Filtered DataFrame:")
+    print(filtered_df.head())
+    print("Original DataFrame:")
+    print(df_original.head())
+'''
+
+dict_with_anomaly = {}
+
+for key, value in results.items():
+    if isinstance(value, tuple) and len(value) > 0 and isinstance(value[0], pd.DataFrame):
+        dict_with_anomaly[key] = value[0]
 
 
 detection_base = DetectionBase(config_loader)
+detection_results = detection_base.all_detection_methods(dict_with_anomaly)
 
-# Tüm tespit yöntemlerini uygula ve sonuçları al
-#detected_anomalies_df, detection_results = detection_base.apply_detection_methods(all_anomalies_df)
+evaluator_base = EvaluatorBase(config_loader)
+evaluation_results = evaluator_base.evaluate_all(detection_results)
 
-#evaluator = Evaluator(detected_anomalies_df)
-#evaluator.evaluate_all_methods()
