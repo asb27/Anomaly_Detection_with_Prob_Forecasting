@@ -9,7 +9,7 @@ from src.data_preparation.data_processor import DataProcessor
 from src.forecasting.forecasting_base import ForecastingBase
 from src.factory.anomaly_factory import AnomalyFactory
 from src.anomaly_scenarios.anomaly_base import AnomalyBase
-from src.detection_methods.detection_base import DetectionBase
+from src.detection_methods.det_base import DetectionBase
 from src.evaluation.evaluator_base import EvaluatorBase
 
 warnings.filterwarnings('ignore', category=tables.NaturalNameWarning)
