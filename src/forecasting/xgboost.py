@@ -5,28 +5,23 @@ import numpy as np
 class Xgboost:
     def __init__(self, config_loader):
         self.params = config_loader
-        self.alpha = self.params.get('params', {}).get('quantile_alpha', [0.1, 0.5])
         print("xgboost_params", self.params)
-
+        self.model = None
 
     def fit(self, X_train, y_train):
-        self.models = []
-        for alpha in self.alpha:
-            params = self.params['params'].copy()
-            params['objective'] = 'reg:quantileerror'
-            params['quantile_alpha'] = alpha
-            model = xgb.XGBRegressor(**params)
-            model.fit(X_train, y_train)
-            self.models.append(model)
+        self.model = xgb.XGBRegressor(**self.params['params'])
+        self.model.fit(X_train, y_train)
 
     def predict(self, X_test):
-        predictions = np.array([model.predict(X_test) for model in self.models])
-        return predictions.T  # Transpose so each row is a sample and each column is a quantile prediction
+        if self.model is not None:
+            return self.model.predict(X_test)
+        else:
+            print("Model is not fitted yet.")
+            return None
 
     def create_prediction_dataframe(self, predictions, y_test):
         try:
-            data = {f'Prediction_{self.alpha[i]}': predictions[:, i] for i in range(len(self.alpha))}
-            data['Consumption'] = y_test.values
+            data = {'Prediction': predictions, 'Consumption': y_test.values}
             return pd.DataFrame(data, index=y_test.index)
         except Exception as e:
             print(f"An error occurred during the creation of the prediction dataframe: {e}")

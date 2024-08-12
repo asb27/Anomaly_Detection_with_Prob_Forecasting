@@ -6,10 +6,26 @@ class EvaluatorForecasting:
     def __init__(self, config_loader):
         self.config_loader = config_loader
 
+    def is_probabilistic_df(self, df):
+        prediction_columns = [col for col in df.columns if col.startswith('Prediction')]
+        return len(prediction_columns) > 1
+
+
+
+
     def evaluate(self, df):
 
         true_values = df['Consumption']
-        predictions = df['Prediction_0.5']
+
+        is_probabilistic = self.is_probabilistic_df(df)
+
+        if is_probabilistic:
+            predictions = df['Prediction_0.5']
+
+        else:
+            predictions = df['Prediction']
+
+
 
         mae = mean_absolute_error(true_values, predictions)
         mse = mean_squared_error(true_values, predictions)

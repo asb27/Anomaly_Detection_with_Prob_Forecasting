@@ -49,17 +49,29 @@
   },
 
    "forecasting": {
-     "type": ["quantile_regression","xgboost"],
+     "type": ["quantile_regression","qxgboost","xgboost"],
        "algorithms": {
          "quantile_regression": {
            "params": {
-             "quantiles": [0.001, 0.01, 0.1, 0.5, 0.9, 0.99, 0.999],
+             "quantiles": [ 0.001, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.999],
              "alpha": 0.0
            }
          },
-         "xgboost": {
+         "qxgboost": {
           "params": {
-            "quantile_alpha": [0.001, 0.01, 0.1, 0.5, 0.9, 0.99, 0.999],
+            "quantile_alpha": [ 0.001, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.999],
+            "n_estimators": 100,
+            "learning_rate": 0.1,
+            "max_depth": 10,
+            "min_child_weight": 1,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "reg_alpha": 0.0,
+            "reg_lambda": 1.0
+          }
+        },
+        "xgboost": {
+          "params": {
             "n_estimators": 100,
             "learning_rate": 0.1,
             "max_depth": 10,
@@ -94,17 +106,30 @@
   },
 
   "detection_methods": {
-    "methods": ["det_quantile", "det_quantile_threshold", "det_quantile_sequence"],
+    "prob_methods": ["det_cdf_sequence"],
+    "deterministic_methods": ["det_sigma"],
     "parameters": {
       "det_quantile": [
         {"upper_quantile": "0.9","lower_quantile": "0.1"},
-        {"upper_quantile": "0.5", "lower_quantile": "0.1"}
+        {"upper_quantile": "0.99", "lower_quantile": "0.01"}
       ],
       "det_threshold": [
-            {"upper_quantile": "0.9","lower_quantile": "0.1", "threshold": 0.1}
+            {"median_quantile": "0.5", "threshold": 0.3}
+        ],
+      "det_quantile_threshold": [
+        {"upper_quantile": "0.9","lower_quantile": "0.1", "threshold": 0.3}
         ],
       "det_quantile_sequence": [
             {"upper_quantile": "0.9","lower_quantile": "0.1", "sequence_number":4}
+        ],
+      "det_quantile_score": [
+            {"quantiles":[0.01, 0.1, 0.9, 0.95, 0.99], "score":40, "sequence_number":4}
+        ],
+      "det_cdf_sequence": [
+            {"quantiles":[0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99] ,"upper_bound":0.95, "lower_bound":0.05, "sequence_number":4}
+        ],
+        "det_sigma": [
+            {"sigma": 2}
         ]
     }
   }

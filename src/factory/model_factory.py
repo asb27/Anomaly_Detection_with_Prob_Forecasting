@@ -1,4 +1,5 @@
 from src.forecasting.quantile_regression import QuantileRegression
+from src.forecasting.qxgboost import QXgboost
 from src.forecasting.xgboost import Xgboost
 class ModelFactory:
 
@@ -11,9 +12,10 @@ class ModelFactory:
         model_type = forecasting_type
         if model_type == "quantile_regression":
             return QuantileRegression(config_loader)
-        elif model_type == "xgboost":
+        elif model_type == "qxgboost" or model_type == "qxgboost":
+            return QXgboost(config_loader)
+        elif model_type == "xgboost" or model_type == "xgboost":
             return Xgboost(config_loader)
-
         #elif model_type == "xgboost":
         #    return xgboost(config_loader)
         else:

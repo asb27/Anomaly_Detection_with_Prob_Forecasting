@@ -1,11 +1,9 @@
-
 class DetQuantileScore:
-    def __init__(self, params):
+    def __init__(self, config_loader, params):
+        self.config_loader = config_loader
         self.parameters = params
-        self.quantiles = self.parameters["quantiles"]
 
     def get_score(self, value, quantile_values):
-
         if value < quantile_values[0]:
             return 20
 
@@ -28,26 +26,33 @@ class DetQuantileScore:
         return 0
 
     def detect(self, df):
+        quantiles = self.parameters['quantiles']
+        score_threshold = self.parameters['score']
+        sequence_number = self.parameters['sequence_number']
+
         consumption_column = 'Anomaly_Consumption'
         detect_column_name = 'Detect'
+        anomaly_score_column = 'Anomaly_Score'
+
         df = df.copy()
         df[detect_column_name] = 0
+        df[anomaly_score_column] = 0
 
-        quantile_column_indices = [df.columns.get_loc(f'Prediction_{q}') for q in self.quantiles]
+        quantile_column_indices = [df.columns.get_loc(f'Prediction_{q}') for q in quantiles]
+        anomaly_scores = []
 
         for i in range(len(df)):
-            scores = []
-            value = df.iloc[i, consumption_column]
-
+            value = df.loc[df.index[i], consumption_column]
             quantile_values = [df.iloc[i, idx] for idx in quantile_column_indices]
 
-            score = self.get_score(value, quantile_values)
-            scores.append(score)
+            anomaly_score = self.get_score(value, quantile_values)
+            anomaly_scores.append(anomaly_score)
 
-            total_score = sum(scores[-self.parameters["sequence_number"]:])
+            total_score = sum(anomaly_scores[-sequence_number:])
 
-            if total_score > self.parameters['threshold']:
-                df.iloc[i, df.columns.get_loc(detect_column_name)] = total_score
+            df.loc[df.index[i], anomaly_score_column] = total_score
+
+            if total_score > score_threshold:
+                df.loc[df.index[i], detect_column_name] = 1
 
         return df
-
