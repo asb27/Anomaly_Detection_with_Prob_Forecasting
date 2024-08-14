@@ -63,7 +63,7 @@ class DataLoad:
     def readweatherall(self, year, datestart=None, dateend=None, sampling='5min'):
         file = f"{self.data_directory}/{year}_weather.hdf5"
         weather = []
-        keys = ['temperature', 'solar irradiance', 'wind', 'humidity', 'pressure', 'apparent_temperature', 'precipitation',
+        keys = ['temperature', 'solar_irradiance', 'wind', 'humidity', 'pressure', 'apparent_temperature', 'precipitation',
                 'pr_precipitation', 'wind_direction', 'wind_gust']
         names = [
 

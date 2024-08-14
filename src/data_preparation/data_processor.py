@@ -23,8 +23,8 @@ class DataProcessor:
         df['month_sin'] = np.sin(2 * np.pi * df['month'] / 12)
         df['month_cos'] = np.cos(2 * np.pi * df['month'] / 12)
         df['DayOfYear'] = df.index.dayofyear
-        df['Day_Sin'] = np.sin(2 * np.pi * df['DayOfYear'] / 365)
-        df['Day_Cos'] = np.cos(2 * np.pi * df['DayOfYear'] / 365)
+        df['day_sin'] = np.sin(2 * np.pi * df['DayOfYear'] / 365)
+        df['day_cos'] = np.cos(2 * np.pi * df['DayOfYear'] / 365)
         return df
 
     def add_holiday_feature(self, df, year):
@@ -68,6 +68,19 @@ class DataProcessor:
                 df[f'{column}_lag_{lag}'] = df[column].shift(lag)
         return df
 
+    def add_custom_features(self, model_name, df):
+        custom_features = self.config_variables[model_name].get('custom_features', [])
+        for feature in custom_features:
+            if feature['type'] == 'multiply':
+                df[feature['new_column_name']] = df[feature['columns'][0]] * df[feature['columns'][1]]
+            elif feature['type'] == 'invert':
+                df[feature['new_column_name']] = 1 / (df[feature['columns'][0]] + 1)
+            elif feature['type'] == 'square_multiply':
+                df[feature['new_column_name']] = df[feature['columns'][0]] ** 2 * df[feature['columns'][1]]
+            else:
+                raise ValueError(f"No Valid feature: {feature['type']}")
+        return df
+
     def create_dataframe_common(self, year, datestart, dateend,model_name, sampling):
         print('creating dataframe')
         weather_dic = self.data_loader.readweatherall(year, datestart, dateend, sampling)
@@ -79,6 +92,8 @@ class DataProcessor:
         merge_tot = self.add_holiday_feature(merge_tot, year)
         merge_tot = self.add_moving_averages(model_name,merge_tot)
         merge_tot = self.add_lags(model_name,merge_tot)
+        merge_tot = self.add_custom_features(model_name, merge_tot)
+
         #merge_tot.drop(['hour_of_day', 'month', 'day_of_week', 'DayOfYear'], axis=1, inplace=True)
 
         # Config

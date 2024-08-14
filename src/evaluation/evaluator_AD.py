@@ -24,7 +24,6 @@ class EvaluatorAD:
             'accuracy': accuracy
         }
 
-
     def evaluate_per_scenario(self, df):
         scenarios = df['Scenario'].unique()
         evaluation_results = {}
@@ -45,3 +44,17 @@ class EvaluatorAD:
                 print(f"  {method}: {result}")
 
         return evaluation_results
+
+    def evaluate_per_model(self, df):
+        models = {}
+        model_results = {}
+        detection_columns = [col for col in df.columns if col.startswith('det_')]
+
+        for column in detection_columns:
+            model_results[column] = self.evaluate(df, column)
+
+
+        for method, result in model_results.items():
+            print(f"  {method}: {result}")
+
+        return models
