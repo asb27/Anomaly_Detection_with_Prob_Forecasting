@@ -5,6 +5,11 @@ import pandas as pd
 from src.data_preparation.data_load import DataLoad
 
 class DataProcessor:
+    """
+    The DataProcessor class is designed to process variable(Feature Enginnering) and prepare it for models.
+    It performs various data preparation steps such as adding time-based features, identifying holidays,
+    adding moving averages...etc. IN initial.json file, you can use this feature to get new variables.
+    """
     def __init__(self, config_loader):
         self.config_loader = config_loader
         self.data_directory = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "data"))
@@ -71,12 +76,18 @@ class DataProcessor:
     def add_custom_features(self, model_name, df):
         custom_features = self.config_variables[model_name].get('custom_features', [])
         for feature in custom_features:
+            df['date'] = df.index.date
             if feature['type'] == 'multiply':
                 df[feature['new_column_name']] = df[feature['columns'][0]] * df[feature['columns'][1]]
             elif feature['type'] == 'invert':
                 df[feature['new_column_name']] = 1 / (df[feature['columns'][0]] + 1)
             elif feature['type'] == 'square_multiply':
                 df[feature['new_column_name']] = df[feature['columns'][0]] ** 2 * df[feature['columns'][1]]
+            elif feature['type'] == 'previous_day_max':
+                df[feature['new_column_name']] = df['date'].map(
+                    df.groupby('date')[feature['columns'][0]].max().shift(1))
+            elif feature['type'] == 'daily_max':
+                df[feature['new_column_name']] = df.groupby('date')[feature['columns'][0]].transform('max')
             else:
                 raise ValueError(f"No Valid feature: {feature['type']}")
         return df

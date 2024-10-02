@@ -7,8 +7,8 @@ class EvaluatorForecasting:
         self.config_loader = config_loader
 
     def is_probabilistic_df(self, df):
-        prediction_columns = [col for col in df.columns if col.startswith('Prediction')]
-        return len(prediction_columns) > 1
+        prediction_columns = [col for col in df.columns if col.startswith('Prediction_')]
+        return len(prediction_columns) > 0
 
 
 

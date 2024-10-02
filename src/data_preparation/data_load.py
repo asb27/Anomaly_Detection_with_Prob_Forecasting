@@ -2,6 +2,13 @@ import os
 import pandas as pd
 
 class DataLoad:
+    """
+    The DataLoad class is designed to load data from the hdf5 files. It is used by the DataProcessor class to load,
+    filter and resample data.
+
+    The data reloads for each model. In fact, once the data is read and cached,
+    other models can use this cache to improve performance.
+    """
     def __init__(self, data_directory):
         self.data_directory = data_directory
         '''self.date_ranges = {
@@ -83,7 +90,7 @@ class DataLoad:
             raw.index = raw.index.tz_localize(None)
 
             cleaned = raw.groupby(level=0).mean()
-            wea = cleaned.resample(sampling).mean() # interpolate() # asfreq()
+            wea = cleaned.resample(sampling).mean()
 
             if datestart and dateend:
                 wea = wea.loc[datestart:dateend]

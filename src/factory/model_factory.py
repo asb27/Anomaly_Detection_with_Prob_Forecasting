@@ -16,7 +16,7 @@ class ModelFactory:
             return QXgboost(config_loader)
         elif model_type == "xgboost" or model_type == "xgboost":
             return Xgboost(config_loader)
-        #elif model_type == "xgboost":
+        #elif model_type == "arima":
         #    return xgboost(config_loader)
         else:
             raise ValueError(f"Model type '{model_type}' is not supported.")

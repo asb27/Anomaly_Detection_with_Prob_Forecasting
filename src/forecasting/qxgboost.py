@@ -5,7 +5,7 @@ import numpy as np
 class QXgboost:
     def __init__(self, config_loader):
         self.params = config_loader
-        self.alpha = self.params.get('params', {}).get('quantile_alpha', [0.1, 0.5])
+        self.alpha = self.params.get('params', {}).get('quantile_alpha', [0.1, 0.5,0.9])
         print("xgboost_params", self.params)
 
 
@@ -21,8 +21,7 @@ class QXgboost:
 
     def predict(self, X_test):
         predictions = np.array([model.predict(X_test) for model in self.models])
-        return predictions.T  # Transpose so each row is a sample and each column is a quantile prediction
-
+        return predictions.T
     def create_prediction_dataframe(self, predictions, y_test):
         try:
             data = {f'Prediction_{self.alpha[i]}': predictions[:, i] for i in range(len(self.alpha))}

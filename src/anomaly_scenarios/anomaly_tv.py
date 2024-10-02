@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from src.anomaly_scenarios.anomaly_base import AnomalyBase
 
@@ -8,41 +9,51 @@ class AnomalyTv(AnomalyBase):
     def apply_anomaly(self, df, period):
         start_time = pd.to_datetime(period[0])
         end_time = pd.to_datetime(period[1])
-        total_period = (end_time - start_time).total_seconds() / 3600  # saat cinsinden
 
-        decrease_percentages = [
-            (0, 12.5, 0.9),
-            (12.5, 25, 0.75),
-            (25, 37.5, 0.7),
-            (37.5, 50, 0.65),
-            (50, 62.5, 0.6),
+        total_period = (end_time - start_time).total_seconds() / 3600
+
+        original_start_value = df.loc[start_time, 'Anomaly_Consumption']
+
+        original_values = [
+            original_start_value * 0.37,
+            original_start_value * 0.3,
+            original_start_value * 2.5,
+            original_start_value * 2.2,
+            original_start_value * 2.1,
+            original_start_value * 1.9
         ]
+        original_times = [0, 25, 30, 60, 80, 100]
 
-        increase_percentages = [
-            (62.5, 68.75, 2.5),
-            (68.75, 75, 2.4),
-            (75, 81.25, 2.3),
-            (81.25, 87.5, 2.2),
-            (87.5, 93.75, 2.1),
-            (93.75, 100, 2.0),
-        ]
+        new_values = []
+        new_times = []
 
-        # Update Consumption values for the anomaly period
-        for start_percent, end_percent, mult in decrease_percentages:
-            period_start = start_time + pd.Timedelta(hours=total_period * start_percent / 100)
-            period_end = start_time + pd.Timedelta(hours=total_period * end_percent / 100)
-            mask = (df.index >= period_start) & (df.index < period_end)
-            df.loc[mask, 'Anomaly_Consumption'] *= mult
-            df.loc[mask, 'Anomaly'] = 1
-            df.loc[mask, 'Scenario'] = 'TV'
+        for i in range(len(original_values)):
+            if i < len(original_values) - 1 and (original_times[i] < 25 or original_times[i] > 30):
+                mid_value1 = (original_values[i] + original_values[i + 1]) * 0.48
+                mid_value2 = (original_values[i] + original_values[i + 1]) * 0.53
+                mid_time1 = original_times[i] + (original_times[i + 1] - original_times[i]) * 0.47
+                mid_time2 = original_times[i] + (original_times[i + 1] - original_times[i]) * 0.55
+                new_values.extend([original_values[i], mid_value1, mid_value2])
+                new_times.extend([original_times[i], mid_time1, mid_time2])
+            else:
+                new_values.append(original_values[i])
+                new_times.append(original_times[i])
 
-        for start_percent, end_percent, mult in increase_percentages:
-            period_start = start_time + pd.Timedelta(hours=total_period * start_percent / 100)
-            period_end = start_time + pd.Timedelta(hours=total_period * end_percent / 100)
-            mask = (df.index >= period_start) & (df.index < period_end)
-            df.loc[mask, 'Anomaly_Consumption'] *= mult
-            df.loc[mask, 'Anomaly'] = 1
-            df.loc[mask, 'Scenario'] = 'TV'
+        time_points = [start_time + pd.Timedelta(hours=total_period * t / 100) for t in new_times]
 
+        rounded_time_points = [df.index.get_loc(df.index[df.index.get_indexer([tp], method='nearest')[0]]) for tp in time_points]
+
+        for i in range(len(time_points)):
+            df.loc[df.index[rounded_time_points[i]], 'Anomaly_Consumption'] = new_values[i]
+
+        for i in range(len(time_points) - 1):
+            mask = (df.index > df.index[rounded_time_points[i]]) & (df.index < df.index[rounded_time_points[i + 1]])
+            df.loc[mask, 'Anomaly_Consumption'] = np.nan
+
+        df['Anomaly_Consumption'] = df['Anomaly_Consumption'].interpolate(method='linear')
+
+        full_mask = (df.index >= start_time) & (df.index <= end_time)
+        df.loc[full_mask, 'Anomaly'] = 1
+        df.loc[full_mask, 'Scenario'] = 'TV'
 
         return df

@@ -9,128 +9,407 @@
     "start_test": "2020-01-01 00:00",
     "end_test": "2020-12-31 23:59"
   },
-
   "data_processor": {
-    "model_names": ["ex_factors", "ex_factors_with_MA"],
-    "models":{
-    "ex_factors": {
-      "variables": ["Consumption","temperature", "humidity", "day_of_week_sin", "day_of_week_cos", "is_weekend","temperature_MA_6","temperature_MA_24"],
+    "model_names": [
+      "ex_factors"
+    ],
+    "models": {
+      "ex_factors": {
+        "variables": [
+          "Consumption",
+          "temperature",
+          "solar_irradiance",
+          "wind",
+          "humidity",
+          "precipitation",
+          "day_of_week_sin",
+          "day_of_week_cos",
+          "is_weekend",
+          "hour_sin",
+          "hour_cos",
+          "month_sin",
+          "month_cos",
+          "day_sin",
+          "day_cos",
+          "solar_irradiance_MA_9",
+          "temperature_MA_24",
+          "temperature_MA_96",
+          "temp_hour",
+          "solar_inverse",
+          "hum_squared_hour",
+          "prev_temp_max",
+          "hum_hour"
+        ],
         "moving_averages": {
-          "temperature": [6, 24]
+          "temperature": [
+            24,
+            96
+          ],
+          "solar_irradiance": [
+            9
+          ]
         },
-    "lags": {
-      "temperature": [3]
-      }
-    },
-
-    "ex_factors_with_MA": {
-      "variables": [
-        "Consumption",
-        "temperature",
-        "humidity",
-        "day_of_week_sin",
-        "day_of_week_cos",
-        "is_weekend",
-        "Consumption_MA_6",
-        "Consumption_MA_24",
-        "Consumption_lag_1"
-      ],
-      "moving_averages": {
-        "Consumption": [
-          6,
-          24
+        "lags": {
+          "temperature": [
+            12
+          ]
+        },
+        "custom_features": [
+          {
+            "type": "multiply",
+            "new_column_name": "temp_hour",
+            "columns": [
+              "temperature",
+              "hour_of_day"
+            ]
+          },
+          {
+            "type": "multiply",
+            "new_column_name": "hum_hour",
+            "columns": [
+              "humidity",
+              "hour_of_day"
+            ]
+          },
+          {
+            "type": "previous_day_max",
+            "new_column_name": "prev_temp_max",
+            "columns": [
+              "temperature"
+            ]
+          },
+          {
+            "type": "invert",
+            "new_column_name": "solar_inverse",
+            "columns": [
+              "solar_irradiance"
+            ]
+          },
+          {
+            "type": "square_multiply",
+            "new_column_name": "hum_squared_hour",
+            "columns": [
+              "humidity",
+              "hour_of_day"
+            ]
+          }
         ]
-      },
-      "lags": {
-        "Consumption": [1]
       }
-    }
     }
   },
-
-   "forecasting": {
-     "type": ["quantile_regression","qxgboost","xgboost"],
-       "algorithms": {
-         "quantile_regression": {
-           "params": {
-             "quantiles": [ 0.001, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.999],
-             "alpha": 0.0
-           }
-         },
-         "qxgboost": {
-          "params": {
-            "quantile_alpha": [ 0.001, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 0.999],
-            "n_estimators": 100,
-            "learning_rate": 0.1,
-            "max_depth": 10,
-            "min_child_weight": 1,
-            "subsample": 0.8,
-            "colsample_bytree": 0.8,
-            "reg_alpha": 0.0,
-            "reg_lambda": 1.0
-          }
-        },
-        "xgboost": {
-          "params": {
-            "n_estimators": 100,
-            "learning_rate": 0.1,
-            "max_depth": 10,
-            "min_child_weight": 1,
-            "subsample": 0.8,
-            "colsample_bytree": 0.8,
-            "reg_alpha": 0.0,
-            "reg_lambda": 1.0
-          }
+  "forecasting": {
+    "type": [
+      "quantile_regression",
+      "qxgboost",
+      "xgboost"
+    ],
+    "algorithms": {
+      "quantile_regression": {
+        "params": {
+          "quantiles": [
+            0.0001,
+            0.0005,
+            0.001,
+            0.005,
+            0.01,
+            0.05,
+            0.1,
+            0.2,
+            0.3,
+            0.4,
+            0.5,
+            0.6,
+            0.7,
+            0.8,
+            0.9,
+            0.95,
+            0.99,
+            0.995,
+            0.999,
+            0.9995,
+            0.9999
+          ],
+          "alpha": 0.0
         }
-       }
-   },
-
+      },
+      "qxgboost": {
+        "params": {
+          "quantile_alpha": [
+            0.0001,
+            0.0005,
+            0.001,
+            0.005,
+            0.01,
+            0.05,
+            0.1,
+            0.2,
+            0.3,
+            0.4,
+            0.5,
+            0.6,
+            0.7,
+            0.8,
+            0.9,
+            0.95,
+            0.99,
+            0.995,
+            0.999,
+            0.9995,
+            0.9999
+          ],
+          "n_estimators": 120,
+          "learning_rate": 0.034,
+          "max_depth": 5,
+          "min_child_weight": 8.853,
+          "subsample": 0.569,
+          "colsample_bytree": 0.78349,
+          "reg_alpha": 19.915,
+          "reg_lambda": 16.831
+        }
+      },
+      "xgboost": {
+        "params": {
+          "n_estimators": 120,
+          "learning_rate": 0.034,
+          "max_depth": 5,
+          "min_child_weight": 8.853,
+          "subsample": 0.569,
+          "colsample_bytree": 0.78349,
+          "reg_alpha": 19.915,
+          "reg_lambda": 16.831
+        }
+      }
+    }
+  },
   "anomalies": {
-    "types": ["normal_consumption","anomaly_tv", "anomaly_evacuation"],
+    "types": [
+      "normal_consumption",
+      "anomaly_tv",
+      "anomaly_evacuation",
+      "anomaly_heatpump",
+      "anomaly_real"
+    ],
     "periods": {
-      "normal_consumption":[
-            ["2020-01-01 00:00", "2020-12-31 23:59"]
+      "normal_consumption": [
+        [
+          "2020-01-01 00:00",
+          "2020-12-31 23:59"
+        ]
       ],
       "anomaly_tv": [
-        ["2020-02-05 19:20", "2020-02-05 22:20"]
+        [
+          "2020-02-05 15:45",
+          "2020-02-05 21:20"
+        ]
       ],
       "anomaly_evacuation": [
-            ["2020-03-05 10:30", "2020-03-05 16:30"]
+        [
+          "2020-03-05 10:30",
+          "2020-03-05 19:30"
         ]
+      ],
+      "anomaly_heatpump": [
+        [
+          "2020-11-05 15:15",
+          "2020-11-05 22:30"
+        ]
+      ],
+      "anomaly_real": [
+        [
+          "2020-08-09 22:15",
+          "2020-08-10 05:45"
+        ],
+         [
+          "2020-08-10 17:45",
+          "2020-08-11 05:30"
+        ]
+
+      ]
+
     },
     "classes": {
       "normal_consumption": "NormalConsumption",
       "anomaly_tv": "AnomalyTv",
-      "anomaly_evacuation": "AnomalyEvacuation"
+      "anomaly_evacuation": "AnomalyEvacuation",
+      "anomaly_heatpump": "AnomalyHeatpump",
+      "anomaly_real": "AnomalyReal"
     }
   },
-
   "detection_methods": {
-    "prob_methods": ["det_cdf_sequence"],
-    "deterministic_methods": ["det_sigma"],
+    "prob_methods": [ "det_smoothing"
+    ],
+    "deterministic_methods": [
+    ],
     "parameters": {
       "det_quantile": [
-        {"upper_quantile": "0.9","lower_quantile": "0.1"},
-        {"upper_quantile": "0.99", "lower_quantile": "0.01"}
+       {
+          "upper_quantile": "0.99",
+          "lower_quantile": "0.01"
+        },
+        {
+          "upper_quantile": "0.995",
+          "lower_quantile": "0.001"
+        },
+        {
+          "upper_quantile": "0.999",
+          "lower_quantile": "0.0001"
+        }
       ],
       "det_threshold": [
-            {"median_quantile": "0.5", "threshold": 0.3}
-        ],
+        {
+          "median_quantile": "0.5",
+          "threshold": 1.4
+        }
+      ],
       "det_quantile_threshold": [
-        {"upper_quantile": "0.9","lower_quantile": "0.1", "threshold": 0.3}
-        ],
+        {
+          "upper_quantile": "0.99",
+          "lower_quantile": "0.001",
+          "threshold": 0.2
+        }
+      ],
       "det_quantile_sequence": [
-            {"upper_quantile": "0.9","lower_quantile": "0.1", "sequence_number":4}
+         {
+          "upper_quantile": "0.995",
+          "lower_quantile": "0.0001",
+          "sequence_number": 3
+        },
+         {
+          "upper_quantile": "0.995",
+          "lower_quantile": "0.0001",
+          "sequence_number": 4
+        },
+      {
+          "upper_quantile": "0.995",
+          "lower_quantile": "0.0001",
+          "sequence_number": 2
+        }
+
+      ],
+      "det_quantile_threshold_sequence": [
+         {
+            "upper_quantile": "0.99",
+            "lower_quantile": "0.001",
+            "threshold": 0.1,
+            "sequence_number": 2
+            },
+
+            {
+            "upper_quantile": "0.99",
+            "lower_quantile": "0.001",
+            "threshold": 0.5,
+            "sequence_number": 3
+            },
+         {
+            "upper_quantile": "0.99",
+            "lower_quantile": "0.001",
+            "threshold": 0.5,
+            "sequence_number": 4
+            }
         ],
       "det_quantile_score": [
-            {"quantiles":[0.01, 0.1, 0.9, 0.95, 0.99], "score":40, "sequence_number":4}
-        ],
+
+           {
+          "quantiles": [
+            0.0001,
+            0.0005,
+            0.001,
+            0.005,
+            0.01,
+            0.05,
+            0.1,
+            0.2,
+            0.3,
+            0.4,
+            0.5,
+            0.6,
+            0.7,
+            0.8,
+            0.9,
+            0.95,
+            0.99,
+            0.995,
+            0.999,
+            0.9995,
+            0.9999
+          ],
+          "average_score": 15.1,
+          "anomaly_score": 16.5,
+             "sequence_number": 3
+        }
+
+      ],
       "det_cdf_sequence": [
-            {"quantiles":[0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99] ,"upper_bound":0.95, "lower_bound":0.05, "sequence_number":4}
-        ],
-        "det_sigma": [
-            {"sigma": 2}
-        ]
+        {
+          "upper_bound": 0.81,
+          "lower_bound": 0.05,
+          "sequence_number": 3,
+          "quantiles": [
+            0.0001,
+            0.0005,
+            0.001,
+            0.005,
+            0.01,
+            0.05,
+            0.1,
+            0.2,
+            0.3,
+            0.4,
+            0.5,
+            0.6,
+            0.7,
+            0.8,
+            0.9,
+            0.95,
+            0.99,
+            0.995,
+            0.999,
+            0.9995,
+            0.9999
+          ]
+        }
+      ],
+            "det_smoothing": [
+
+           {
+          "quantiles": [
+            0.0001,
+            0.0005,
+            0.001,
+            0.005,
+            0.01,
+            0.05,
+            0.1,
+            0.2,
+            0.3,
+            0.4,
+            0.5,
+            0.6,
+            0.7,
+            0.8,
+            0.9,
+            0.95,
+            0.99,
+            0.995,
+            0.999,
+            0.9995,
+            0.9999
+          ],
+          "smoothed_score": 22,
+          "anomaly_score": 21.99
+        }
+
+      ],
+      "det_percent_threshold": [
+        {
+          "threshold": 1
+        }
+      ],
+      "det_abs_threshold": [
+        {
+          "coefficient": 3
+        }
+      ]
     }
   }
 }

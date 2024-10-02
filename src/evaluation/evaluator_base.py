@@ -17,8 +17,6 @@ class EvaluatorBase:
 
         for key, df in all_dfs.items():
             print(f"\n\nAnomaly Evaluating results for {key}:")
-            #anomaly per scenario
-            #anomaly_eval_result = self.anomaly_evaluator.evaluate_per_scenario(df)
 
             anomaly_eval_result = self.anomaly_evaluator.evaluate_per_model(df)
 

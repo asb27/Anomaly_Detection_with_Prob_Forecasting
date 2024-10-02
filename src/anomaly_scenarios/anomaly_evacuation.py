@@ -1,56 +1,64 @@
 import pandas as pd
+import numpy as np
 from src.anomaly_scenarios.anomaly_base import AnomalyBase
-
 
 class AnomalyEvacuation(AnomalyBase):
     def __init__(self, config_loader):
         super().__init__(config_loader)
-        #self.parameters = config_loader.get_anomaly_periods('anomaly_tv')
-
 
     def apply_anomaly(self, df, period):
-
-
         start_time = pd.to_datetime(period[0])
         end_time = pd.to_datetime(period[1])
-        #mask = (df.index >= start_time) & (df.index <= end_time)
-
 
         total_period = (end_time - start_time).total_seconds() / 3600
 
-        increase_percentages = [
-            (0, 12.5, 2),
-            (12.5, 25, 2.5),
-            (25, 37.5, 2.8),
-            (37.5, 50, 3.2),
-            (50, 62.5, 2.1),
-        ]
+        original_start_value = df.loc[start_time, 'Anomaly_Consumption']
 
-        # Azalma yüzdeleri (sonra azalma olacak)
-        decrease_percentages = [
-            (62.5, 68.75, 0.9),
-            (68.75, 75, 0.5),
-            (75, 81.25, 0.4),
-            (81.25, 87.5, 0.3),
-            (87.5, 93.75, 0.3),
-            (93.75, 100, 0.1),
-        ]
+        original_values = [
+            original_start_value * 2.2,
+            original_start_value * 3,
+            original_start_value * 2.5,
+            original_start_value * 0.3,
+            original_start_value * 0.2
+            ]
+        original_times = [0, 40, 60, 65, 100]
 
-        # Update the consumption values for the anomaly period
-        for start_percent, end_percent, mult in increase_percentages:
-            period_start = start_time + pd.Timedelta(hours=total_period * start_percent / 100)
-            period_end = start_time + pd.Timedelta(hours=total_period * end_percent / 100)
-            mask = (df.index >= period_start) & (df.index < period_end)
-            df.loc[mask, 'Anomaly_Consumption'] *= mult
-            df.loc[mask, 'Anomaly'] = 1
-            df.loc[mask, 'Scenario'] = 'Evacuation'
+        new_values = []
+        new_times = []
 
-        for start_percent, end_percent, mult in decrease_percentages:
-            period_start = start_time + pd.Timedelta(hours=total_period * start_percent / 100)
-            period_end = start_time + pd.Timedelta(hours=total_period * end_percent / 100)
-            mask = (df.index >= period_start) & (df.index < period_end)
-            df.loc[mask, 'Anomaly_Consumption'] *= mult
-            df.loc[mask, 'Anomaly'] = 1
-            df.loc[mask, 'Scenario'] = 'Evacuation'
+        for i in range(len(original_values)):
+            if i < len(original_values) - 1 and (original_times[i] < 60 or original_times[i] > 65):
+                mid_value1 = (original_values[i] + original_values[i + 1]) * 0.49
+                mid_value2 = (original_values[i] + original_values[i + 1]) * 0.57
+                mid_time1 = original_times[i] + (original_times[i + 1] - original_times[i]) * 0.49
+                mid_time2 = original_times[i] + (original_times[i + 1] - original_times[i]) * 0.55
+                new_values.extend([original_values[i], mid_value1, mid_value2])
+                new_times.extend([original_times[i], mid_time1, mid_time2])
+            else:
+                new_values.append(original_values[i])
+                new_times.append(original_times[i])
+
+        # Convert percentage times to actual times
+        time_points = [start_time + pd.Timedelta(hours=total_period * t / 100) for t in new_times]
+
+        # Yuvarlanmış zaman noktalarını bulmak
+        rounded_time_points = [df.index.get_loc(df.index[df.index.get_indexer([tp], method='nearest')[0]]) for tp in time_points]
+
+        # Apply the changes and fill in between points using linear interpolation
+        for i in range(len(time_points)):
+            df.loc[df.index[rounded_time_points[i]], 'Anomaly_Consumption'] = new_values[i]
+
+        # Ensure that the values in between are NaN to allow interpolation
+        for i in range(len(time_points) - 1):
+            mask = (df.index > df.index[rounded_time_points[i]]) & (df.index < df.index[rounded_time_points[i + 1]])
+            df.loc[mask, 'Anomaly_Consumption'] = np.nan
+
+        # Perform the interpolation over the entire period
+        df['Anomaly_Consumption'] = df['Anomaly_Consumption'].interpolate(method='linear')
+
+        # Set anomaly flags and scenario name for the entire period
+        full_mask = (df.index >= start_time) & (df.index <= end_time)
+        df.loc[full_mask, 'Anomaly'] = 1
+        df.loc[full_mask, 'Scenario'] = 'Evacuation'
 
         return df

@@ -5,4 +5,11 @@ class NormalConsumption(AnomalyBase):
         super().__init__(config_loader)
 
     def apply_anomaly(self, df, period):
+
+
+
+
+
+
+
         return df

@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt
-from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score, roc_auc_score
 import pandas as pd
 
 
@@ -16,13 +16,18 @@ class EvaluatorAD:
         recall = recall_score(y_true, y_pred, zero_division=1)
         f1 = f1_score(y_true, y_pred, zero_division=1)
         accuracy = accuracy_score(y_true, y_pred)
+        auc = roc_auc_score(y_true, y_pred)
+        #fprr, tprr, _ = roc_curve(y_true, y_pred, zero_division=1)
 
         return {
             'precision': precision,
             'recall': recall,
             'f1_score': f1,
-            'accuracy': accuracy
-        }
+            'accuracy': accuracy,
+            'auc': auc,
+
+
+      }
 
     def evaluate_per_scenario(self, df):
         scenarios = df['Scenario'].unique()
@@ -57,4 +62,4 @@ class EvaluatorAD:
         for method, result in model_results.items():
             print(f"  {method}: {result}")
 
-        return models
+        return model_results

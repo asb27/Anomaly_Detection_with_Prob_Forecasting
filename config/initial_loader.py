@@ -1,6 +1,11 @@
 import json
 
 class ConfigLoader:
+    """
+    The ConfigLoader class is used to load a JSON configuration file(initial.json) and
+    make its contents for other classes accessible.
+    """
+
     def __init__(self, config_path):
         self.config_path = config_path
         self.config = self.load_config()

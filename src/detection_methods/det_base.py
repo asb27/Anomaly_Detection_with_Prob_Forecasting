@@ -9,8 +9,8 @@ class DetectionBase:
         self.detection_methods = config_loader.get_config('detection_methods')
 
     def is_probabilistic_df(self, df):
-        prediction_columns = [col for col in df.columns if col.startswith('Prediction')]
-        return len(prediction_columns) > 1
+        prediction_columns = [col for col in df.columns if col.startswith('Prediction_')]
+        return len(prediction_columns) > 0
 
     def apply_detection_methods(self, df):
         results = {}
